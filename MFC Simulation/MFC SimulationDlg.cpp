@@ -19,17 +19,24 @@ END_MESSAGE_MAP()
 
 void CSimulatorView::OnPaint()
 {
+	CPaintDC dc( &m_pParent->m_ctlSimulation ); // device context for painting
+	CRect r;
+	this->GetWindowRect( &r );
+
+	dc.FillSolidRect( 1,1, r.Width()-2, r.Height()-2, RGB(200,200,200) );
+
 	// Are we currently running the simulation?
 	if ( m_pParent->m_bRunning )
 	{
 		// get a DC for the simulation drawing area
-		CPaintDC dc( &m_pParent->m_ctlSimulation ); // device context for painting
-		dc.SetBkMode( OPAQUE );
-		dc.SetBkColor( RGB(255,255,255) );
-//		dc.FillSolidRect( 0,0,9999,9999, RGB(200,200,200) );
+//		CPaintDC dc( &m_pParent->m_ctlSimulation ); // device context for painting
+//		dc.SetBkMode( OPAQUE );
+//		dc.SetBkColor( RGB(255,255,255) );
+
 
 		if ( m_pParent->m_pWorld ) m_pParent->m_pWorld->Draw( dc );
 	}
+
 }
 
 
@@ -128,6 +135,5 @@ void CMFCSimulationDlg::OnStartSimulation()
 
 	m_bRunning = true;
 
-	RedrawWindow();
-	this->Invalidate();
+	m_ctlSimulation.Invalidate();
 }
