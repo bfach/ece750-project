@@ -48,6 +48,9 @@ public:
 	afx_msg void OnStartSimulation();
 	afx_msg void OnEnChangeEdit1();
 
+public: 
+	void addToOutput(CString str);
+
 private:
 	CStatic m_ctlTower1;
 	CStatic m_ctlTower2;
