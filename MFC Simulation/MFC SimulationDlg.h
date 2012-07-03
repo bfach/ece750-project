@@ -34,8 +34,6 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
-
-
 // Implementation
 protected:
 	HICON m_hIcon;
@@ -49,9 +47,6 @@ protected:
 public:
 	afx_msg void OnStartSimulation();
 	afx_msg void OnEnChangeEdit1();
-
-public: 
-	void addToOutput(CString str);
 
 private:
 	CStatic m_ctlTower1;

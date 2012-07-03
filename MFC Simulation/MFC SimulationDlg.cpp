@@ -79,11 +79,6 @@ BOOL CMFCSimulationDlg::OnInitDialog()
 
 	SetResize( IDC_OUTPUT, SZ_HORRESIZE(1) );
 
-	m_ctlOutput.SetWindowTextW(L"");
-	m_ctlTower1.SetWindowTextW(L"");
-	m_ctlTower2.SetWindowTextW(L"");
-	m_ctlTower3.SetWindowTextW(L"");
-
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -135,15 +130,4 @@ void CMFCSimulationDlg::OnStartSimulation()
 
 	RedrawWindow();
 	this->Invalidate();
-
-	this->addToOutput( L"hello world");
-	this->addToOutput( L"1234");
-}
-
-void CMFCSimulationDlg::addToOutput(CString str)
-{
-	CString newStr;
-	m_ctlOutput.GetWindowTextW(newStr);
-	newStr += str;
-	m_ctlOutput.SetWindowTextW(newStr);
 }
