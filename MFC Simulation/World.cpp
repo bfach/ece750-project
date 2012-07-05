@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "resource.h"
 #include "World.h"
 #include "WirelessProvider.h"
 
@@ -46,6 +47,7 @@ void CWorld::Draw( CDC & dc )
 		dc.SelectObject( qCirclePen );
 
 		dc.Ellipse( p.x - p.strength/2, p.y - p.strength/2, p.x + p.strength/2, p.y + p.strength/2);
+		DrawTower( dc, p.x, p.y, p.strength/2, p.strength/2 );
 	}
 
 	COLORREF qCircleColor = RGB(255,255,0);
@@ -53,6 +55,19 @@ void CWorld::Draw( CDC & dc )
 	dc.SelectObject( qCirclePen );
 
 	dc.Ellipse( mobileSystem.x - 5, mobileSystem.y - 5, mobileSystem.x + 5, mobileSystem.y + 5 );
+}
+
+
+void CWorld::DrawTower( CDC & dc, int x, int y, int width, int height )
+{
+	CBitmap bmTower;
+	if ( !bmTower.LoadBitmap( IDB_TOWER ) ) return;
+
+	CDC mdc;
+	mdc.CreateCompatibleDC( &dc );
+	mdc.SelectObject( bmTower );
+
+	dc.StretchBlt( x-width/2, y-width/2, width, height, &mdc, 0,0,114,114, SRCCOPY );
 }
 
 void CWorld::Tick()

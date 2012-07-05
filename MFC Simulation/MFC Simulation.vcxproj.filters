@@ -21,6 +21,9 @@
     <None Include="res\MFC Simulation.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\tower.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MFC Simulation.h">

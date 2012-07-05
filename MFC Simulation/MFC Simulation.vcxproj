@@ -96,6 +96,7 @@
   <ItemGroup>
     <None Include="res\MFC Simulation.ico" />
     <None Include="res\MFCSimulation.rc2" />
+    <None Include="res\tower.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LocatableObject.h" />

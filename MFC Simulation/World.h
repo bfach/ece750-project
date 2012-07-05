@@ -12,6 +12,9 @@ public:
 	void Tick();
 
 protected:
+	void DrawTower( CDC & dc, int x, int y, int width, int height );
+
+protected:
 	CArray<CWirelessProvider> wirelessProviders;
 	CMobileSystem mobileSystem;
 
