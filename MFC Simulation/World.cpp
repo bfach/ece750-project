@@ -2,7 +2,7 @@
 #include "World.h"
 #include "WirelessProvider.h"
 
-CWorld::CWorld(void)
+CWorld::CWorld()
 {
 	// semi-randomly locate the wireless location 
 	// TODO: Make this work from the Ui
@@ -24,6 +24,9 @@ CWorld::CWorld(void)
 	wirelessProviders.Add( p1 );
 	wirelessProviders.Add( p2 );
 	wirelessProviders.Add( p3 );
+
+	mobileSystem.x = 90;
+	mobileSystem.y = 105;
 }
 
 
@@ -49,5 +52,10 @@ void CWorld::Draw( CPaintDC & dc )
 	CPen qCirclePen(PS_SOLID, 2, qCircleColor);
 	dc.SelectObject( qCirclePen );
 
-	dc.Ellipse( 0,0, 10, 10);
+	dc.Ellipse( mobileSystem.x - 5, mobileSystem.y - 5, mobileSystem.x + 5, mobileSystem.y + 5 );
+}
+
+void CWorld::Tick()
+{
+	mobileSystem.x++;
 }

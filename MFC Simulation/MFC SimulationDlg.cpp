@@ -47,6 +47,7 @@ CMFCSimulationDlg::CMFCSimulationDlg(CWnd* pParent /*=NULL*/)
 	, m_ctlSimulation( this )
 	, m_pWorld( 0 )
 	, m_bRunning( false )
+	, m_pThread(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -59,6 +60,8 @@ void CMFCSimulationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TOWER3, m_ctlTower3);
 	DDX_Control(pDX, IDC_OUTPUT, m_ctlOutput);
 	DDX_Control(pDX, IDC_PICTURE, m_ctlSimulation);
+	DDX_Control(pDX, IDC_BUTTON1, m_ctlStartSimulation);
+	DDX_Control(pDX, IDCANCEL, m_ctlClose);
 }
 
 BEGIN_MESSAGE_MAP(CMFCSimulationDlg, CResizeDialog)
@@ -133,17 +136,59 @@ HCURSOR CMFCSimulationDlg::OnQueryDragIcon()
 }
 
 
+UINT afxThreadProc( LPVOID pParam )
+{
+	if ( 0 == pParam ) return -1;
+	CMFCSimulationDlg *pDlg = static_cast<CMFCSimulationDlg*> (pParam);
+	pDlg->threadProc();
+}
+
+void CMFCSimulationDlg::threadProc()
+{
+	while ( !m_bThreadShouldExit )
+	{
+		Sleep(100);
+		m_pWorld->Tick();
+		m_ctlSimulation.Invalidate();
+	}
+	m_bRunning = false;
+}
+
 void CMFCSimulationDlg::OnStartSimulation()
 {
-	// Create the world
-	m_pWorld = new CWorld;
+	m_ctlStartSimulation.EnableWindow(FALSE);
 
-	m_bRunning = true;
+	if ( 0 != m_pWorld )
+	{
+		m_bThreadShouldExit = true;
+		while ( m_bRunning ) Sleep(10);
+		delete m_pWorld;
+		m_pWorld = 0;
 
-	m_ctlSimulation.Invalidate();
+		m_ctlStartSimulation.SetWindowText( L"Start Simulation" );
+		m_ctlClose.EnableWindow( TRUE );
+	}
+	else
+	{
+		m_ctlClose.EnableWindow( FALSE );
 
-	this->addToOutput( L"hello world");
-	this->addToOutput( L"1234");
+		// Create the world
+		m_pWorld = new CWorld;
+
+		// Kick off the thread
+		m_bThreadShouldExit = false;
+		m_pThread = AfxBeginThread( afxThreadProc, (LPVOID)this );
+
+		m_bRunning = true;
+
+		m_ctlSimulation.Invalidate();
+		m_ctlStartSimulation.SetWindowText( L"Stop Simulation" );
+
+		this->addToOutput( L"hello world");
+		this->addToOutput( L"1234");
+	}
+
+	m_ctlStartSimulation.EnableWindow(TRUE);
 }
 
 void CMFCSimulationDlg::addToOutput(CString str)

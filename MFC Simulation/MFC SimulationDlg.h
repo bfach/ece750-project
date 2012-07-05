@@ -50,6 +50,7 @@ public:
 
 public: 
 	void addToOutput(CString str);
+	void threadProc();
 
 private:
 	CStatic m_ctlTower1;
@@ -59,5 +60,9 @@ private:
 	CSimulatorView m_ctlSimulation;
 
 	bool m_bRunning;
+	bool m_bThreadShouldExit;
 	CWorld * m_pWorld;
+	CWinThread *m_pThread;
+	CButton m_ctlStartSimulation;
+	CButton m_ctlClose;
 };
