@@ -35,7 +35,7 @@ CWorld::~CWorld(void)
 }
 
 
-void CWorld::Draw( CPaintDC & dc )
+void CWorld::Draw( CDC & dc )
 {
 	for ( int i=0; i<wirelessProviders.GetCount(); ++i )
 	{

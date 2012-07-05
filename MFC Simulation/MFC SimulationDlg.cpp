@@ -19,11 +19,13 @@ END_MESSAGE_MAP()
 
 void CSimulatorView::OnPaint()
 {
-	CPaintDC dc( &m_pParent->m_ctlSimulation ); // device context for painting
+	CPaintDC pdc( &m_pParent->m_ctlSimulation ); // device context for painting
+	CMemDC mdc( pdc, &m_pParent->m_ctlSimulation  );
+
 	CRect r;
 	this->GetWindowRect( &r );
 
-	dc.FillSolidRect( 1,1, r.Width()-2, r.Height()-2, RGB(200,200,200) );
+	mdc.GetDC().FillSolidRect( 1,1, r.Width()-2, r.Height()-2, RGB(200,200,200) );
 
 	// Are we currently running the simulation?
 	if ( m_pParent->m_bRunning )
@@ -34,7 +36,7 @@ void CSimulatorView::OnPaint()
 //		dc.SetBkColor( RGB(255,255,255) );
 
 
-		if ( m_pParent->m_pWorld ) m_pParent->m_pWorld->Draw( dc );
+		if ( m_pParent->m_pWorld ) m_pParent->m_pWorld->Draw( mdc.GetDC() );
 	}
 
 }
@@ -141,6 +143,7 @@ UINT afxThreadProc( LPVOID pParam )
 	if ( 0 == pParam ) return -1;
 	CMFCSimulationDlg *pDlg = static_cast<CMFCSimulationDlg*> (pParam);
 	pDlg->threadProc();
+	return 0;
 }
 
 void CMFCSimulationDlg::threadProc()

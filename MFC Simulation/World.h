@@ -8,7 +8,7 @@ public:
 	CWorld();
 	virtual ~CWorld();
 
-	virtual void Draw( CPaintDC & dc );
+	virtual void Draw( CDC & dc );
 	void Tick();
 
 protected:
