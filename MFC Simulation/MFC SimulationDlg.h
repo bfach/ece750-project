@@ -4,6 +4,7 @@
 
 #pragma once
 #include "afxwin.h"
+#include "afxcmn.h"
 class CWorld;
 class CMFCSimulationDlg;
 
@@ -42,6 +43,8 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg void OnHScroll(UINT, UINT, CScrollBar*); 
+
 	DECLARE_MESSAGE_MAP()
 
 public:
@@ -59,10 +62,14 @@ private:
 	CStatic m_ctlOutput;
 	CSimulatorView m_ctlSimulation;
 
-	bool m_bRunning;
-	bool m_bThreadShouldExit;
+	HANDLE m_hThreadShouldExit;
+	HANDLE m_hThreadHasExited;
+	int m_nMaxTicks;
 	CWorld * m_pWorld;
 	CWinThread *m_pThread;
 	CButton m_ctlStartSimulation;
 	CButton m_ctlClose;
+	CSliderCtrl m_ctlSlider;
+	int m_nTickCount;
+	bool m_bPauseSimulation;
 };

@@ -9,7 +9,7 @@ public:
 	virtual ~CWorld();
 
 	virtual void Draw( CDC & dc );
-	void Tick();
+	void Tick( int nTickCount );
 
 protected:
 	void DrawTower( CDC & dc, int x, int y, int width, int height );

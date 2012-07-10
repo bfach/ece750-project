@@ -70,7 +70,8 @@ void CWorld::DrawTower( CDC & dc, int x, int y, int width, int height )
 	dc.StretchBlt( x-width/2, y-width/2, width, height, &mdc, 0,0,114,114, SRCCOPY );
 }
 
-void CWorld::Tick()
+void CWorld::Tick( int nTick )
 {
-	mobileSystem.x++;
+	// FIXME
+	mobileSystem.x = nTick + 100;
 }

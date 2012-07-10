@@ -28,7 +28,7 @@ void CSimulatorView::OnPaint()
 	mdc.GetDC().FillSolidRect( 1,1, r.Width()-2, r.Height()-2, RGB(200,200,200) );
 
 	// Are we currently running the simulation?
-	if ( m_pParent->m_bRunning )
+	if ( m_pParent->m_hThreadHasExited && WAIT_OBJECT_0 != ::WaitForSingleObject( m_pParent->m_hThreadHasExited, 0 ) )
 	{
 		// get a DC for the simulation drawing area
 //		CPaintDC dc( &m_pParent->m_ctlSimulation ); // device context for painting
@@ -48,10 +48,14 @@ CMFCSimulationDlg::CMFCSimulationDlg(CWnd* pParent /*=NULL*/)
 	: CResizeDialog(CMFCSimulationDlg::IDD, pParent)
 	, m_ctlSimulation( this )
 	, m_pWorld( 0 )
-	, m_bRunning( false )
 	, m_pThread(0)
+	, m_bPauseSimulation( false )
+	, m_nMaxTicks( 300 )
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+
+	m_hThreadShouldExit = ::CreateEvent( NULL, TRUE, TRUE, NULL );
+	m_hThreadHasExited = ::CreateEvent( NULL, TRUE, TRUE, NULL );
 }
 
 void CMFCSimulationDlg::DoDataExchange(CDataExchange* pDX)
@@ -64,12 +68,14 @@ void CMFCSimulationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PICTURE, m_ctlSimulation);
 	DDX_Control(pDX, IDC_BUTTON1, m_ctlStartSimulation);
 	DDX_Control(pDX, IDCANCEL, m_ctlClose);
+	DDX_Control(pDX, IDC_SLIDER1, m_ctlSlider);
 }
 
 BEGIN_MESSAGE_MAP(CMFCSimulationDlg, CResizeDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CMFCSimulationDlg::OnStartSimulation)
+	ON_WM_HSCROLL()
 END_MESSAGE_MAP()
 
 
@@ -95,6 +101,8 @@ BOOL CMFCSimulationDlg::OnInitDialog()
 	m_ctlTower1.SetWindowTextW(L"");
 	m_ctlTower2.SetWindowTextW(L"");
 	m_ctlTower3.SetWindowTextW(L"");
+
+	m_ctlSlider.SetRange( 0, m_nMaxTicks );
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -148,41 +156,70 @@ UINT afxThreadProc( LPVOID pParam )
 
 void CMFCSimulationDlg::threadProc()
 {
-	while ( !m_bThreadShouldExit )
+	m_bPauseSimulation = false;
+
+	while ( WAIT_TIMEOUT == ::WaitForSingleObject( m_hThreadShouldExit, 100 ) )
 	{
-		Sleep(100);
-		m_pWorld->Tick();
+		if ( !m_bPauseSimulation ) 
+		{
+			m_nTickCount++;
+			if ( m_nTickCount > m_nMaxTicks )
+			{
+				OnStartSimulation(); // This is probably bad
+				::SetEvent( m_hThreadShouldExit );
+			}
+			else
+				m_ctlSlider.SetPos( m_nTickCount );
+		}
+		m_pWorld->Tick(m_nTickCount);
 		m_ctlSimulation.Invalidate();
 	}
-	m_bRunning = false;
+
+	::SetEvent( m_hThreadHasExited );
 }
 
 void CMFCSimulationDlg::OnStartSimulation()
 {
+	// Unpause
+	if ( m_bPauseSimulation )
+	{
+		m_ctlStartSimulation.SetWindowText( L"Stop Simulation" );
+		m_bPauseSimulation = false;
+		return;
+	}
+
 	m_ctlStartSimulation.EnableWindow(FALSE);
 
 	if ( 0 != m_pWorld )
 	{
-		m_bThreadShouldExit = true;
-		while ( m_bRunning ) Sleep(10);
+		// End the simulation
+		//
+		::SetEvent( m_hThreadShouldExit );
+		DWORD dwRes = ::WaitForSingleObject( m_hThreadHasExited, 5000 );
+		ATLASSERT( WAIT_TIMEOUT != dwRes );
+
 		delete m_pWorld;
 		m_pWorld = 0;
 
 		m_ctlStartSimulation.SetWindowText( L"Start Simulation" );
 		m_ctlClose.EnableWindow( TRUE );
+		m_ctlSlider.EnableWindow( FALSE );
 	}
 	else
 	{
+		// Start the simulation
+		//
 		m_ctlClose.EnableWindow( FALSE );
+		m_ctlSlider.EnableWindow( TRUE );
 
 		// Create the world
 		m_pWorld = new CWorld;
 
 		// Kick off the thread
-		m_bThreadShouldExit = false;
+		::ResetEvent( m_hThreadShouldExit );
+		::ResetEvent( m_hThreadHasExited );
+		m_nTickCount = 0;
 		m_pThread = AfxBeginThread( afxThreadProc, (LPVOID)this );
-
-		m_bRunning = true;
 
 		m_ctlSimulation.Invalidate();
 		m_ctlStartSimulation.SetWindowText( L"Stop Simulation" );
@@ -200,4 +237,20 @@ void CMFCSimulationDlg::addToOutput(CString str)
 	m_ctlOutput.GetWindowTextW(newStr);
 	newStr += str;
 	m_ctlOutput.SetWindowTextW(newStr);
+}
+
+void CMFCSimulationDlg::OnHScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar )
+{
+//	CSliderCtrl *pSlider = (CSliderCtrl*)pScrollBar;
+//	int nPos = pSlider->GetPos();
+	if ( false == m_bPauseSimulation )
+	{
+		m_ctlStartSimulation.SetWindowText( L"Resume Simulation" );
+		m_bPauseSimulation = true;
+	}
+
+	if ( SB_THUMBPOSITION == nSBCode || SB_THUMBTRACK == nSBCode )
+	{
+		m_nTickCount = nPos;
+	}
 }
