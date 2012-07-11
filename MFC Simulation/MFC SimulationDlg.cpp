@@ -165,7 +165,9 @@ void CMFCSimulationDlg::threadProc()
 			m_nTickCount++;
 			if ( m_nTickCount > m_nMaxTicks )
 			{
-				OnStartSimulation(); // This is probably bad
+				// Fake pressing the button to stop the simulation
+				::PostMessage( m_hWnd, WM_COMMAND, MAKELONG(IDC_BUTTON1, BN_CLICKED), (LPARAM)NULL);
+				//OnStartSimulation(); // This is probably bad
 				::SetEvent( m_hThreadShouldExit );
 			}
 			else
