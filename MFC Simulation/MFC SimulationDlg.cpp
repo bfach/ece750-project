@@ -7,6 +7,8 @@
 #include "MFC SimulationDlg.h"
 #include "afxdialogex.h"
 #include "World.h"
+#include "HandoverSignalStrength.h"
+#include "HandoverLastMinute.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,6 +71,13 @@ void CMFCSimulationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON1, m_ctlStartSimulation);
 	DDX_Control(pDX, IDCANCEL, m_ctlClose);
 	DDX_Control(pDX, IDC_SLIDER1, m_ctlSlider);
+	DDX_Control(pDX, IDC_SS_HOME, m_ctlSignalHome);
+	DDX_Control(pDX, IDC_SS_CELLTOWER, m_ctlSignalCell);
+	DDX_Control(pDX, IDC_SS_WORK, m_ctlSignalWork);
+	DDX_Control(pDX, IDC_PAUSE, m_ctlPause);
+	DDX_Control(pDX, IDC_CONN_HOME, m_ctlHomeArrow);
+	DDX_Control(pDX, IDC_CONN_CELL, m_ctlCellArrow);
+	DDX_Control(pDX, IDC_CONN_WORK, m_ctlWorkArrow);
 }
 
 BEGIN_MESSAGE_MAP(CMFCSimulationDlg, CResizeDialog)
@@ -103,6 +112,19 @@ BOOL CMFCSimulationDlg::OnInitDialog()
 	m_ctlTower3.SetWindowTextW(L"");
 
 	m_ctlSlider.SetRange( 0, m_nMaxTicks );
+
+	m_ctlPause.SetCheck( BST_CHECKED );
+
+	CImage i;
+	i.Load( L"C:\\Users\\Shawn\\Desktop\\Simulation\\ece750-project\\MFC Simulation\\res\\arrow_down.png" );
+
+	//i.LoadFromResource( AfxGetInstanceHandle(), IDB_GREENARROW );
+	m_ctlHomeArrow.SetBitmap( i );
+	m_ctlCellArrow.SetBitmap( i );
+	m_ctlWorkArrow.SetBitmap( i );
+
+	CButton* pButton = (CButton*)GetDlgItem(IDC_ALG_LASTMINUTE);
+	if ( pButton ) pButton->SetCheck(true);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -148,9 +170,13 @@ HCURSOR CMFCSimulationDlg::OnQueryDragIcon()
 
 UINT afxThreadProc( LPVOID pParam )
 {
+	ATLTRACE( L"%s: Starting\n", __FUNCTIONW__ );
+
 	if ( 0 == pParam ) return -1;
 	CMFCSimulationDlg *pDlg = static_cast<CMFCSimulationDlg*> (pParam);
 	pDlg->threadProc();
+
+	ATLTRACE( L"%s: Ending\n", __FUNCTIONW__ );
 	return 0;
 }
 
@@ -160,24 +186,52 @@ void CMFCSimulationDlg::threadProc()
 
 	while ( WAIT_TIMEOUT == ::WaitForSingleObject( m_hThreadShouldExit, 100 ) )
 	{
+		//ATLTRACE( L"%s: Tick %d\n", __FUNCTIONW__, m_nTickCount );
 		if ( !m_bPauseSimulation ) 
 		{
 			m_nTickCount++;
 			if ( m_nTickCount > m_nMaxTicks )
 			{
 				// Fake pressing the button to stop the simulation
-				::PostMessage( m_hWnd, WM_COMMAND, MAKELONG(IDC_BUTTON1, BN_CLICKED), (LPARAM)NULL);
-				//OnStartSimulation(); // This is probably bad
 				::SetEvent( m_hThreadShouldExit );
+				::PostMessage( m_hWnd, WM_COMMAND, MAKELONG(IDC_BUTTON1, BN_CLICKED), (LPARAM)NULL);
+				break;
 			}
 			else
+			{
 				m_ctlSlider.SetPos( m_nTickCount );
+			}
 		}
+
+		int nProvider = m_pWorld->nProviderConnectedTo;
 		m_pWorld->Tick(m_nTickCount);
 		m_ctlSimulation.Invalidate();
+
+		CString strTemp;
+
+		strTemp.Format( L"%s: %d", m_pWorld->wirelessProviders[0].name, m_pWorld->wirelessProviders[0].signal );
+		m_ctlSignalCell.SetWindowText( strTemp );
+
+		strTemp.Format( L"%s: %d", m_pWorld->wirelessProviders[1].name, m_pWorld->wirelessProviders[1].signal );
+		m_ctlSignalHome.SetWindowText( strTemp );
+
+		strTemp.Format( L"%s: %d", m_pWorld->wirelessProviders[2].name, m_pWorld->wirelessProviders[2].signal );
+		m_ctlSignalWork.SetWindowText( strTemp );
+
+		// If the provider changed, do something
+		if ( m_pWorld->nProviderConnectedTo != nProvider )
+		{
+			int n = m_pWorld->nProviderConnectedTo;
+			m_ctlHomeArrow.ShowWindow( n == 1 ? SW_SHOW : SW_HIDE );
+			m_ctlWorkArrow.ShowWindow( n == 2 ? SW_SHOW : SW_HIDE );
+			m_ctlCellArrow.ShowWindow( n == 0 ? SW_SHOW : SW_HIDE );
+		}
 	}
 
+	ATLTRACE( L"%s: Signalling\n", __FUNCTIONW__ );
 	::SetEvent( m_hThreadHasExited );
+
+	ATLTRACE( L"%s: Exiting\n", __FUNCTIONW__ );
 }
 
 void CMFCSimulationDlg::OnStartSimulation()
@@ -197,6 +251,7 @@ void CMFCSimulationDlg::OnStartSimulation()
 		// End the simulation
 		//
 		::SetEvent( m_hThreadShouldExit );
+		ATLTRACE( L"%s: Waiting for thread to exit\n", __FUNCTIONW__ );
 		DWORD dwRes = ::WaitForSingleObject( m_hThreadHasExited, 5000 );
 		ATLASSERT( WAIT_TIMEOUT != dwRes );
 
@@ -215,7 +270,11 @@ void CMFCSimulationDlg::OnStartSimulation()
 		m_ctlSlider.EnableWindow( TRUE );
 
 		// Create the world
-		m_pWorld = new CWorld;
+		CHandoverAlgorithm *pAlg = 0;
+		if (BST_CHECKED == ((CButton*)GetDlgItem(IDC_ALG_LASTMINUTE))->GetCheck()) pAlg = new CHandoverLastMinute;
+		else if (BST_CHECKED == ((CButton*)GetDlgItem(IDC_ALG_BESTSIGNAL))->GetCheck()) pAlg = new CHandoverSignalStrength;
+
+		m_pWorld = new CWorld(pAlg);
 
 		// Kick off the thread
 		::ResetEvent( m_hThreadShouldExit );
@@ -243,8 +302,6 @@ void CMFCSimulationDlg::addToOutput(CString str)
 
 void CMFCSimulationDlg::OnHScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar )
 {
-//	CSliderCtrl *pSlider = (CSliderCtrl*)pScrollBar;
-//	int nPos = pSlider->GetPos();
 	if ( false == m_bPauseSimulation )
 	{
 		m_ctlStartSimulation.SetWindowText( L"Resume Simulation" );

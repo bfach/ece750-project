@@ -72,4 +72,12 @@ private:
 	CSliderCtrl m_ctlSlider;
 	int m_nTickCount;
 	bool m_bPauseSimulation;
+public:
+	CStatic m_ctlSignalHome;
+	CStatic m_ctlSignalCell;
+	CStatic m_ctlSignalWork;
+	CButton m_ctlPause;
+	CStatic m_ctlHomeArrow;
+	CStatic m_ctlCellArrow;
+	CStatic m_ctlWorkArrow;
 };

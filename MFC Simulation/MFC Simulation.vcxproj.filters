@@ -24,6 +24,12 @@
     <None Include="res\tower.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\arrow_down.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\arrow_down.png">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MFC Simulation.h">
@@ -53,6 +59,15 @@
     <ClInclude Include="World.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HandoverAlgorithm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HandoverSignalStrength.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HandoverLastMinute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFC Simulation.cpp">
@@ -77,6 +92,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HandoverAlgorithm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HandoverSignalStrength.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HandoverLastMinute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

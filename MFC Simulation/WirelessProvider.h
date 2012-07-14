@@ -9,6 +9,7 @@ public:
 	virtual ~CWirelessProvider();
 
 	long strength;
+	long signal;
 	CString name;
 };
 

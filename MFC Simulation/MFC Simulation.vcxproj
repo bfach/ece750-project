@@ -94,11 +94,16 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="res\arrow_down.bmp" />
+    <None Include="res\arrow_down.png" />
     <None Include="res\MFC Simulation.ico" />
     <None Include="res\MFCSimulation.rc2" />
     <None Include="res\tower.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HandoverAlgorithm.h" />
+    <ClInclude Include="HandoverLastMinute.h" />
+    <ClInclude Include="HandoverSignalStrength.h" />
     <ClInclude Include="LocatableObject.h" />
     <ClInclude Include="MFC Simulation.h" />
     <ClInclude Include="MFC SimulationDlg.h" />
@@ -110,6 +115,9 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HandoverAlgorithm.cpp" />
+    <ClCompile Include="HandoverLastMinute.cpp" />
+    <ClCompile Include="HandoverSignalStrength.cpp" />
     <ClCompile Include="LocatableObject.cpp" />
     <ClCompile Include="MFC Simulation.cpp" />
     <ClCompile Include="MFC SimulationDlg.cpp" />
